@@ -1,0 +1,12 @@
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.venv/
+.omx/
+.env
+*.pyc
+
+backend/data/kb/index.json
+backend/data/sessions.json
+backend/data/uploads/*
+!backend/data/uploads/.gitkeep

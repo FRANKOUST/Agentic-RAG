@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agentic RAG Demo</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="header">
+        <div>
+          <div class="eyebrow">LangChain × OceanBase</div>
+          <h1>Agentic RAG Demo</h1>
+          <p class="muted">作品级 Agentic RAG 演示，支持 two-step、agentic、corrective 与 hybrid 四种检索模式。</p>
+        </div>
+        <div class="status-pill" id="health-indicator">Checking service...</div>
+      </header>
+
+      <main class="grid">
+        <section class="panel panel-chat">
+          <div class="panel-header">
+            <h2>Chat</h2>
+            <p>Ask questions about the indexed documents.</p>
+          </div>
+
+          <form id="chat-form" class="chat-form">
+            <label>
+              Session
+              <div class="inline-actions">
+                <select id="session-select"></select>
+                <button type="button" id="new-session-btn" class="secondary">New session</button>
+              </div>
+            </label>
+
+            <label>
+              Retrieval mode
+              <select id="mode-select">
+                <option value="two-step">two-step</option>
+                <option value="agentic">agentic</option>
+                <option value="corrective">corrective</option>
+                <option value="hybrid">hybrid</option>
+              </select>
+            </label>
+
+            <label>
+              Hybrid mode
+              <select id="hybrid-mode-select">
+                <option value="balanced">balanced</option>
+                <option value="semantic">semantic</option>
+                <option value="keyword">keyword</option>
+                <option value="exact">exact</option>
+              </select>
+            </label>
+
+            <label>
+              Message
+              <textarea id="message-input" rows="4" placeholder="e.g. Summarize Nike's revenue outlook."></textarea>
+            </label>
+
+            <button type="submit">Send</button>
+          </form>
+        </section>
+
+        <section class="panel panel-messages">
+          <div class="panel-header">
+            <h2>Conversation</h2>
+            <p>Messages, citations, and retrieval traces.</p>
+          </div>
+          <div id="messages" class="messages"></div>
+        </section>
+
+        <section class="panel panel-kb">
+          <div class="panel-header">
+            <h2>Knowledge Base</h2>
+            <p>Upload PDFs or rebuild the local index.</p>
+          </div>
+
+          <form id="upload-form" class="stacked-form">
+            <label>
+              PDF upload
+              <input type="file" id="upload-input" accept="application/pdf" />
+            </label>
+            <button type="submit" class="secondary">Upload & index</button>
+          </form>
+
+          <button id="reindex-btn" class="secondary">Rebuild index from uploads</button>
+
+          <div class="kb-docs">
+            <div class="subheading">Indexed documents</div>
+            <ul id="document-list"></ul>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/static/app.js" type="module"></script>
+  </body>
+</html>
