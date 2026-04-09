@@ -85,8 +85,3 @@ uv run pytest -q -c pytest.ini
 ### `hybrid`
 
 统一融合稠密检索、稀疏检索与全文检索，并支持多种搜索模式切换。
-
-## 说明
-
-- OceanBase、Tavily、模型 API Key 都是可选配置；未配置时项目仍可在本地演示基础能力。
-- `backend/data` 中的索引和会话文件属于运行期产物，已在 `.gitignore` 中忽略。
