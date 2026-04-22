@@ -518,25 +518,31 @@ function userTurnHTML(msg) {
 function composerHTML() {
   const deep = state.prefs.mode === "agentic" || state.prefs.mode === "hybrid";
   const web = state.prefs.mode === "corrective";
+  const scopeLabel = state.kbCount > 0
+    ? `${state.kbCount} document${state.kbCount === 1 ? "" : "s"}`
+    : "Nothing indexed";
   return `
     <div class="composer-wrap">
       <div class="composer">
         <textarea id="composer-input" class="composer-input" rows="1"
           placeholder="Ask a grounded question…" ${state.isSending ? "disabled" : ""}></textarea>
         <div class="composer-row">
-          <button class="composer-chip ${deep ? "active" : ""}" data-act="toggle-deep" title="Deep uses agentic planning; Fast uses a single retrieve-then-generate pass.">
+          <button class="composer-chip ${deep ? "active" : ""}" data-act="toggle-deep" title="Deep runs the agentic planner with iterative retrieval; Fast is a single retrieve-then-generate pass.">
             ${ICON.sparkles(12)} ${deep ? "Deep research" : "Fast retrieval"}
           </button>
-          <button class="composer-chip" data-act="cycle-searchmode" title="Cycle retrieval mode">
-            ${ICON.book(12)} Search: ${esc(state.prefs.searchMode)}
+          <button class="composer-chip" data-act="view-kb" title="Manage indexed documents (click to open the knowledge base)">
+            ${ICON.book(12)} Scope: ${esc(scopeLabel)}
           </button>
-          <button class="composer-chip" data-act="upload" title="Upload PDF to knowledge base">
+          <button class="composer-chip" data-act="cycle-searchmode" title="Cycle retrieval strategy: balanced → semantic → keyword → exact">
+            ${ICON.activity()} ${esc(state.prefs.searchMode)}
+          </button>
+          <button class="composer-chip" data-act="upload" title="Upload a PDF to the knowledge base">
             ${ICON.attach()} Attach
           </button>
-          <button class="composer-chip ${web ? "active" : ""}" data-act="toggle-web" title="Enable Tavily web fallback (corrective mode)">
+          <button class="composer-chip ${web ? "active" : ""}" data-act="toggle-web" title="Enable Tavily web fallback when local retrieval is insufficient (corrective mode).">
             ${ICON.globe()} Web
           </button>
-          <button class="composer-send" id="composer-send" data-act="send" ${state.isSending ? "disabled" : ""}>
+          <button class="composer-send" id="composer-send" data-act="send" ${state.isSending ? "disabled" : ""} title="Send (Enter)">
             ${ICON.send(14)}
           </button>
         </div>
