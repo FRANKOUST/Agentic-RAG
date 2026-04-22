@@ -12,6 +12,7 @@ __pycache__/
 
 # Design reference files (external links only, not needed in repo)
 design-md/
+_design-ref/
 
 # Temporary / scratch files
 frontend/src/app.tmp.js
