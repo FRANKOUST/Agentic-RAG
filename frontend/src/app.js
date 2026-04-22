@@ -126,10 +126,10 @@ function relTime(iso) {
   if (!iso) return "";
   const d = new Date(iso);
   const diff = (Date.now() - d.getTime()) / 1000;
-  if (diff < 60) return "just now";
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  if (diff < 60) return "刚刚";
+  if (diff < 3600) return `${Math.floor(diff / 60)} 分钟前`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} 小时前`;
+  return d.toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" });
 }
 
 function docTypeFromName(name) {
@@ -263,53 +263,53 @@ function sidebarHTML() {
 
   return `
     <aside class="sidebar">
-      <button class="sidebar-edge-toggle" data-act="toggle-sidebar" title="Expand sidebar" aria-label="Expand sidebar">
+      <button class="sidebar-edge-toggle" data-act="toggle-sidebar" title="展开侧边栏" aria-label="展开侧边栏">
         ${ICON.chevRight()}
       </button>
 
       <div class="sidebar-head">
         ${collapsed ? "" : `<div class="brand" title="Atlas"><div class="brand-mark"></div><span>Atlas</span></div>`}
-        <button class="icon-btn" data-act="toggle-sidebar" title="${collapsed ? "Expand" : "Collapse"} sidebar"
+        <button class="icon-btn" data-act="toggle-sidebar" title="${collapsed ? "展开" : "收起"}侧边栏"
                 style="${collapsed ? "margin-left:auto;margin-right:auto;" : ""}">
           ${collapsed ? ICON.menu : ICON.panel}
         </button>
       </div>
 
-      <button class="new-chat" data-act="new-session">
+      <button class="new-chat" data-act="new-session" title="新建对话">
         ${ICON.plus}
-        <span class="label">New inquiry</span>
+        <span class="label">新建对话</span>
         <span class="kbd">⌘K</span>
       </button>
 
       <div class="sidebar-nav">
         <button class="nav-item ${state.view === "chat" ? "active" : ""}" data-act="view-chat">
           ${ICON.chat}
-          <span>Conversations</span>
+          <span>对话</span>
           <span class="count">${state.sessions.length}</span>
         </button>
         <button class="nav-item ${state.view === "kb" ? "active" : ""}" data-act="view-kb">
           ${ICON.book()}
-          <span>Knowledge base</span>
+          <span>知识库</span>
           <span class="count">${state.kbCount}</span>
         </button>
         <button class="nav-item" data-act="toggle-tweaks">
           ${ICON.settings()}
-          <span>Settings</span>
+          <span>设置</span>
         </button>
       </div>
 
-      ${collapsed ? "" : `<div class="sidebar-section">Recent threads</div>`}
+      ${collapsed ? "" : `<div class="sidebar-section">最近对话</div>`}
       ${collapsed ? "" : `
         <div class="thread-list">
           ${threads.length === 0
-            ? `<div style="padding:10px 12px;color:var(--ink-4);font-size:12px;">No sessions yet.</div>`
+            ? `<div style="padding:10px 12px;color:var(--ink-4);font-size:12px;">暂无对话</div>`
             : threads.map((t) => `
               <button class="thread ${t.session_id === state.activeSessionId ? "active" : ""}" data-act="open-session" data-sid="${esc(t.session_id)}">
-                <div class="thread-title">${esc(t.title || "Untitled")}</div>
+                <div class="thread-title">${esc(t.title || "未命名")}</div>
                 <div class="thread-meta">
                   <span>${relTime(t.updated_at || t.created_at)}</span>
                 </div>
-                <span class="thread-delete" data-act="delete-session" data-sid="${esc(t.session_id)}" title="Delete session">
+                <span class="thread-delete" data-act="delete-session" data-sid="${esc(t.session_id)}" title="删除对话">
                   ${ICON.trash}
                 </span>
               </button>
@@ -318,11 +318,11 @@ function sidebarHTML() {
       `}
 
       <div class="sidebar-foot">
-        <div class="avatar">AT</div>
+        <div class="avatar">研</div>
         ${collapsed ? "" : `
           <div class="user-info">
-            <div class="name">Researcher</div>
-            <div class="plan">Local instance</div>
+            <div class="name">研究员</div>
+            <div class="plan">本地实例</div>
           </div>
         `}
       </div>
@@ -340,12 +340,12 @@ function topbarHTML() {
     return `
       <div class="topbar">
         <div class="topbar-title">
-          <span class="title-text">Knowledge base</span>
+          <span class="title-text">知识库</span>
         </div>
         <div class="topbar-spacer"></div>
-        <span class="pill"><span class="dot"></span>${state.kbCount} indexed</span>
-        <button class="btn ghost" data-act="reindex" title="Rebuild vector index">${ICON.refresh()} Rebuild</button>
-        <button class="btn" data-act="toggle-tweaks" title="Open settings">${ICON.settings()}</button>
+        <span class="pill"><span class="dot"></span>已索引 ${state.kbCount} 份</span>
+        <button class="btn ghost" data-act="reindex" title="重建向量索引">${ICON.refresh()} 重建索引</button>
+        <button class="btn" data-act="toggle-tweaks" title="打开设置">${ICON.settings()}</button>
       </div>
     `;
   }
@@ -354,27 +354,27 @@ function topbarHTML() {
     <div class="topbar">
       <div class="topbar-title">
         ${activeSession
-          ? `<span class="crumb-dim">Conversation</span><span class="crumb-sep">/</span><span class="title-text">${esc(activeSession.title || "Untitled")}</span>`
-          : `<span class="title-text">New inquiry</span>`}
+          ? `<span class="crumb-dim">对话</span><span class="crumb-sep">/</span><span class="title-text">${esc(activeSession.title || "未命名")}</span>`
+          : `<span class="title-text">新建对话</span>`}
       </div>
       <div class="topbar-spacer"></div>
-      <span class="pill"><span class="dot"></span>Indexed · ${esc(indexedAgo)}</span>
+      <span class="pill"><span class="dot"></span>已索引 · ${esc(indexedAgo)}</span>
       ${state.prefs.agentViz !== "hidden"
-        ? `<button class="btn ${hasAgentRail ? "active" : ""}" data-act="toggle-reasoning">
-            ${ICON.sparkles(14)} Reasoning
+        ? `<button class="btn ${hasAgentRail ? "active" : ""}" data-act="toggle-reasoning" title="切换推理面板">
+            ${ICON.sparkles(14)} 推理
           </button>`
         : ""}
-      <button class="btn ghost" data-act="toggle-tweaks" title="Settings">${ICON.settings()}</button>
+      <button class="btn ghost" data-act="toggle-tweaks" title="设置">${ICON.settings()}</button>
     </div>
   `;
 }
 
 /* ========== Render: Empty state ========== */
 const SUGGESTIONS = [
-  { kind: "Summary",    q: "Summarize the main themes across all indexed documents." },
-  { kind: "Comparison", q: "Compare the risk factors across the indexed filings." },
-  { kind: "Extraction", q: "Extract the key financial metrics from the most recent document." },
-  { kind: "Timeline",   q: "Build a chronological timeline of the most important events." },
+  { kind: "总结",  q: "总结已索引文档中的主要主题。" },
+  { kind: "对比",  q: "对比已索引文档中的风险因素。" },
+  { kind: "提取",  q: "从最新的文档中提取关键的财务指标。" },
+  { kind: "时间线", q: "根据已索引文档整理一份按时间顺序的重要事件线。" },
 ];
 
 function emptyStateHTML() {
@@ -388,16 +388,16 @@ function emptyStateHTML() {
   return `
     <div class="empty">
       <div class="empty-title">
-        Ask <em class="accent">anything</em> across your indexed documents.
+        基于你的知识库，<em class="accent">随心提问</em>。
       </div>
       <div class="empty-sub">
-        Atlas reads the documents you've indexed, routes your question through the chosen retrieval strategy,
-        and returns answers with every claim tied to a source.
+        Atlas 会读取已索引的文档，按照所选的检索策略进行路由，
+        并为每一条结论附上可追溯的来源引用。
       </div>
       <div class="empty-scope">
-        ${docChips || `<span class="scope-chip" style="color:var(--ink-3);">No documents indexed yet</span>`}
+        ${docChips || `<span class="scope-chip" style="color:var(--ink-3);">尚未索引任何文档</span>`}
         <button class="scope-chip" data-act="upload" style="color: var(--ink-3);">
-          ${ICON.plus} Add source
+          ${ICON.plus} 添加文档
         </button>
       </div>
       <div class="suggested">
@@ -420,19 +420,20 @@ function agentInlineHTML(msg, msgIdx) {
   const elapsed = msg.__elapsedMs != null ? `${(msg.__elapsedMs / 1000).toFixed(1)}s` : "";
 
   const label = streaming
-    ? (state.streamingStatus === "generating" ? "Composing the answer" : "Thinking through your question")
-    : `Answered with ${(msg.sources || []).length} source${(msg.sources || []).length === 1 ? "" : "s"}`;
+    ? (state.streamingStatus === "generating" ? "正在撰写答案" : "正在思考你的问题")
+    : `引用 ${(msg.sources || []).length} 份来源完成回答`;
 
-  const detail = `${steps.length} step${steps.length === 1 ? "" : "s"} · ${esc(msg.mode || state.prefs.mode)} · ${esc(msg.fallback_used ? "fallback used" : "direct")}`;
+  const modeLabel = MODE_ZH[msg.mode || state.prefs.mode] || (msg.mode || state.prefs.mode);
+  const detail = `${steps.length} 步 · ${esc(modeLabel)} · ${esc(msg.fallback_used ? "使用回退" : "直接回答")}`;
 
   const body = open ? `
     <div class="agent-inline-body">
       ${steps.length === 0
-        ? `<div class="agent-step"><span class="step-num">—</span><span class="step-kind">no tools</span><span class="step-detail">Model responded directly without invoking tools.</span><span class="step-time"></span></div>`
+        ? `<div class="agent-step"><span class="step-num">—</span><span class="step-kind">未调用工具</span><span class="step-detail">模型未调用工具直接作答。</span><span class="step-time"></span></div>`
         : steps.map((s, i) => `
           <div class="agent-step">
             <div class="step-num">${String(i + 1).padStart(2, "0")}</div>
-            <div class="step-kind ${(s.status === "completed" ? "" : "think")} ${(s.tool_name || "").includes("answer") ? "answer" : ""}">${esc(s.tool_name || "tool")}</div>
+            <div class="step-kind ${(s.status === "completed" ? "" : "think")} ${(s.tool_name || "").includes("answer") ? "answer" : ""}">${esc(s.tool_name || "工具")}</div>
             <div class="step-detail"><b>${esc(s.query || "")}</b> ${s.summary ? "· " + esc(s.summary) : ""}</div>
             <div class="step-time">${esc(s.mode || s.status || "")}</div>
           </div>
@@ -484,12 +485,12 @@ function assistantTurnHTML(msg, msgIdx) {
             <span class="src-chip" data-act="open-source" data-msg-idx="${msgIdx}" data-cite-n="${i + 1}" title="${esc(s.document_name || "")}">${i + 1}</span>
           `).join("")}
         </div>
-        <span>Grounded in ${sources.length} source${sources.length === 1 ? "" : "s"}${msg.used_tools ? " · tools used" : ""}</span>
+        <span>基于 ${sources.length} 份来源${msg.used_tools ? " · 已调用工具" : ""}</span>
       </div>
-      <button class="tiny-btn" data-act="copy-msg" data-mid="${esc(msg.message_id)}" title="Copy answer">${ICON.copy}</button>
-      <button class="tiny-btn" data-act="regenerate" data-mid="${esc(msg.message_id)}" title="Regenerate answer">${ICON.refresh()}</button>
-      <button class="tiny-btn ${rating === "up" ? "active" : ""}" data-act="rate" data-mid="${esc(msg.message_id)}" data-rating="up" title="Good answer">${ICON.thumbUp}</button>
-      <button class="tiny-btn ${rating === "down" ? "active" : ""}" data-act="rate" data-mid="${esc(msg.message_id)}" data-rating="down" title="Poor answer">${ICON.thumbDown}</button>
+      <button class="tiny-btn" data-act="copy-msg" data-mid="${esc(msg.message_id)}" title="复制答案">${ICON.copy}</button>
+      <button class="tiny-btn" data-act="regenerate" data-mid="${esc(msg.message_id)}" title="重新生成">${ICON.refresh()}</button>
+      <button class="tiny-btn ${rating === "up" ? "active" : ""}" data-act="rate" data-mid="${esc(msg.message_id)}" data-rating="up" title="回答有帮助">${ICON.thumbUp}</button>
+      <button class="tiny-btn ${rating === "down" ? "active" : ""}" data-act="rate" data-mid="${esc(msg.message_id)}" data-rating="down" title="回答不佳">${ICON.thumbDown}</button>
     </div>
   ` : "";
 
@@ -515,49 +516,43 @@ function userTurnHTML(msg) {
 }
 
 /* ========== Render: Composer ========== */
+// 输入框只保留文本域；按 Enter 发送，Shift+Enter 换行。
+// 模式/检索策略等控制已迁移至「设置」面板（右上角齿轮图标）。
 function composerHTML() {
-  const deep = state.prefs.mode === "agentic" || state.prefs.mode === "hybrid";
-  const web = state.prefs.mode === "corrective";
-  const scopeLabel = state.kbCount > 0
-    ? `${state.kbCount} document${state.kbCount === 1 ? "" : "s"}`
-    : "Nothing indexed";
+  const hint = state.isSending
+    ? "正在生成回答…"
+    : `按 Enter 发送 · Shift+Enter 换行 · 模式：${MODE_ZH[state.prefs.mode] || state.prefs.mode} · 检索：${SEARCH_ZH[state.prefs.searchMode] || state.prefs.searchMode}`;
   return `
     <div class="composer-wrap">
       <div class="composer">
         <textarea id="composer-input" class="composer-input" rows="1"
-          placeholder="Ask a grounded question…" ${state.isSending ? "disabled" : ""}></textarea>
-        <div class="composer-row">
-          <button class="composer-chip ${deep ? "active" : ""}" data-act="toggle-deep" title="Deep runs the agentic planner with iterative retrieval; Fast is a single retrieve-then-generate pass.">
-            ${ICON.sparkles(12)} ${deep ? "Deep research" : "Fast retrieval"}
-          </button>
-          <button class="composer-chip" data-act="view-kb" title="Manage indexed documents (click to open the knowledge base)">
-            ${ICON.book(12)} Scope: ${esc(scopeLabel)}
-          </button>
-          <button class="composer-chip" data-act="cycle-searchmode" title="Cycle retrieval strategy: balanced → semantic → keyword → exact">
-            ${ICON.activity()} ${esc(state.prefs.searchMode)}
-          </button>
-          <button class="composer-chip" data-act="upload" title="Upload a PDF to the knowledge base">
-            ${ICON.attach()} Attach
-          </button>
-          <button class="composer-chip ${web ? "active" : ""}" data-act="toggle-web" title="Enable Tavily web fallback when local retrieval is insufficient (corrective mode).">
-            ${ICON.globe()} Web
-          </button>
-          <button class="composer-send" id="composer-send" data-act="send" ${state.isSending ? "disabled" : ""} title="Send (Enter)">
-            ${ICON.send(14)}
-          </button>
-        </div>
+          placeholder="提出一个基于来源的问题…" ${state.isSending ? "disabled" : ""}></textarea>
+        <div class="composer-hint">${esc(hint)}</div>
       </div>
     </div>
   `;
 }
+
+const MODE_ZH = {
+  "two-step": "两步检索",
+  "agentic": "智能体",
+  "corrective": "纠正式",
+  "hybrid": "混合",
+};
+const SEARCH_ZH = {
+  "balanced": "平衡",
+  "semantic": "语义",
+  "keyword": "关键词",
+  "exact": "精确",
+};
 
 /* ========== Render: Agent rail (right) ========== */
 function agentRailHTML() {
   const lastAssistant = [...state.messages].reverse().find((m) => m.role === "assistant");
   const streaming = !!(lastAssistant && lastAssistant.__streaming);
   const statusLabel = streaming
-    ? (state.streamingStatus === "generating" ? "composing" : "retrieving")
-    : lastAssistant ? "grounded" : "idle";
+    ? (state.streamingStatus === "generating" ? "撰写中" : "检索中")
+    : lastAssistant ? "已落盘" : "空闲";
 
   const question = [...state.messages].reverse().find((m) => m.role === "user")?.content;
   const steps = lastAssistant?.tool_trajectory || [];
@@ -569,21 +564,21 @@ function agentRailHTML() {
   return `
     <aside class="agent-rail">
       <div class="rail-head">
-        <div class="title">Reasoning</div>
+        <div class="title">推理过程</div>
         <span class="pill agent" style="margin-left:auto;">
           ${ICON.activity()} ${statusLabel}
         </span>
-        <button class="icon-btn" data-act="hide-rail" title="Hide reasoning">${ICON.x()}</button>
+        <button class="icon-btn" data-act="hide-rail" title="隐藏推理面板">${ICON.x()}</button>
       </div>
       <div class="rail-scroll">
         ${question ? `
-          <div class="rail-group-title">Question</div>
+          <div class="rail-group-title">问题</div>
           <div class="rail-question">"${esc(question)}"</div>
         ` : ""}
 
-        <div class="rail-group-title">Agent trace</div>
+        <div class="rail-group-title">执行轨迹</div>
         ${steps.length === 0 && !streaming ? `
-          <div style="color:var(--ink-3);font-size:12px;">No tool calls recorded.</div>
+          <div style="color:var(--ink-3);font-size:12px;">未记录工具调用。</div>
         ` : `
           <div class="timeline">
             ${steps.map((s, i) => {
@@ -592,7 +587,7 @@ function agentRailHTML() {
               return `
                 <div class="tl-step ${done ? "done" : ""} ${active ? "active" : ""}">
                   <div class="dot"></div>
-                  <div class="tl-kind">${esc(s.tool_name || "step")} · ${esc(s.mode || s.status || "")}</div>
+                  <div class="tl-kind">${esc(s.tool_name || "步骤")} · ${esc(s.mode || s.status || "")}</div>
                   <div class="tl-title">${esc(s.query || "")}</div>
                   ${s.summary ? `<div class="tl-detail">${esc(s.summary)}</div>` : ""}
                 </div>
@@ -601,28 +596,28 @@ function agentRailHTML() {
             ${streaming && steps.length === 0 ? `
               <div class="tl-step active">
                 <div class="dot"></div>
-                <div class="tl-kind">${esc(state.streamingStatus || "thinking")}</div>
-                <div class="tl-title">Routing the request…</div>
+                <div class="tl-kind">${esc(state.streamingStatus || "思考中")}</div>
+                <div class="tl-title">正在路由请求…</div>
               </div>
             ` : ""}
           </div>
         `}
 
         ${lastAssistant && !streaming ? `
-          <div class="rail-group-title">Grounding</div>
+          <div class="rail-group-title">来源与落盘</div>
           <div class="rail-stats">
-            <div class="stat"><div class="v">${sources.length}</div><div class="l">Sources</div></div>
-            <div class="stat"><div class="v">${lastAssistant.used_tools ? "yes" : "no"}</div><div class="l">Tools used</div></div>
-            <div class="stat"><div class="v">${elapsed != null ? (elapsed / 1000).toFixed(1) + "s" : "—"}</div><div class="l">Time</div></div>
-            <div class="stat"><div class="v">${lastAssistant.fallback_used ? "yes" : "no"}</div><div class="l">Fallback</div></div>
+            <div class="stat"><div class="v">${sources.length}</div><div class="l">来源数</div></div>
+            <div class="stat"><div class="v">${lastAssistant.used_tools ? "是" : "否"}</div><div class="l">调用工具</div></div>
+            <div class="stat"><div class="v">${elapsed != null ? (elapsed / 1000).toFixed(1) + "s" : "—"}</div><div class="l">用时</div></div>
+            <div class="stat"><div class="v">${lastAssistant.fallback_used ? "是" : "否"}</div><div class="l">使用回退</div></div>
           </div>
         ` : !lastAssistant ? `
-          <div class="rail-group-title">Workspace</div>
+          <div class="rail-group-title">工作区</div>
           <div class="rail-stats">
-            <div class="stat"><div class="v">${state.kbCount}</div><div class="l">Documents</div></div>
-            <div class="stat"><div class="v">${state.kbDocs.reduce((n, d) => n + (d.chunk_count || 0), 0)}</div><div class="l">Chunks</div></div>
-            <div class="stat"><div class="v">${state.sessions.length}</div><div class="l">Sessions</div></div>
-            <div class="stat"><div class="v">${esc(state.prefs.mode)}</div><div class="l">Mode</div></div>
+            <div class="stat"><div class="v">${state.kbCount}</div><div class="l">文档</div></div>
+            <div class="stat"><div class="v">${state.kbDocs.reduce((n, d) => n + (d.chunk_count || 0), 0)}</div><div class="l">片段</div></div>
+            <div class="stat"><div class="v">${state.sessions.length}</div><div class="l">会话</div></div>
+            <div class="stat"><div class="v">${esc(MODE_ZH[state.prefs.mode] || state.prefs.mode)}</div><div class="l">模式</div></div>
           </div>
         ` : ""}
       </div>
@@ -652,22 +647,22 @@ function sourcePanelHTML() {
       <div class="sp-head">
         <span class="badge">${n}</span>
         <div class="title" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-          ${esc(src.document_name || "Source")}
+          ${esc(src.document_name || "来源")}
         </div>
-        <button class="icon-btn" data-act="close-source" title="Close">${ICON.x()}</button>
+        <button class="icon-btn" data-act="close-source" title="关闭">${ICON.x()}</button>
       </div>
       <div class="sp-meta">
-        <div class="item"><span class="k">mode</span><span style="text-transform:uppercase;">${esc(src.mode || "—")}</span></div>
-        <div class="item"><span class="k">page</span>${esc(src.page ?? "—")}</div>
-        <div class="item"><span class="k">score</span><span style="color:var(--accent-ink);">${Number(src.score || 0).toFixed(3)}</span></div>
+        <div class="item"><span class="k">模式</span><span style="text-transform:uppercase;">${esc(src.mode || "—")}</span></div>
+        <div class="item"><span class="k">页码</span>${esc(src.page ?? "—")}</div>
+        <div class="item"><span class="k">相关度</span><span style="color:var(--accent-ink);">${Number(src.score || 0).toFixed(3)}</span></div>
         ${src.signals && Object.keys(src.signals).length > 0
           ? Object.entries(src.signals).slice(0, 3).map(([k, v]) => `<div class="item"><span class="k">${esc(k)}</span>${Number(v).toFixed(2)}</div>`).join("")
           : ""}
       </div>
       <div class="sp-body">
-        <h4>Summary</h4>
+        <h4>摘要</h4>
         <p>${esc(src.summary || "—")}</p>
-        <h4>Excerpt</h4>
+        <h4>原文摘录</h4>
         <p>${body}</p>
       </div>
     </aside>
@@ -688,44 +683,44 @@ function knowledgeBaseHTML() {
       <div class="kb-wrap">
         <div class="kb-head">
           <div>
-            <h1>Knowledge base</h1>
-            <p>Atlas keeps your indexed corpus searchable in milliseconds. Upload documents and rebuild the index anytime.</p>
+            <h1>知识库</h1>
+            <p>Atlas 让已索引的语料可毫秒级检索。你可以随时上传新的文档或重建索引。</p>
           </div>
           <div class="kb-tools">
-            <button class="btn" data-act="reindex">${ICON.refresh()} Rebuild index</button>
-            <button class="btn primary" data-act="upload">${ICON.upload()} Add source</button>
+            <button class="btn" data-act="reindex">${ICON.refresh()} 重建索引</button>
+            <button class="btn primary" data-act="upload">${ICON.upload()} 添加文档</button>
           </div>
         </div>
 
         <div class="kb-stats">
-          <div class="kb-stat"><div class="v">${state.kbCount}</div><div class="l">Documents</div></div>
-          <div class="kb-stat"><div class="v">${totalChunks.toLocaleString()}</div><div class="l">Chunks indexed</div></div>
-          <div class="kb-stat"><div class="v">${esc(state.prefs.mode)}</div><div class="l">Active mode</div></div>
-          <div class="kb-stat"><div class="v">${esc(state.prefs.searchMode)}</div><div class="l">Search mode</div></div>
+          <div class="kb-stat"><div class="v">${state.kbCount}</div><div class="l">文档数</div></div>
+          <div class="kb-stat"><div class="v">${totalChunks.toLocaleString()}</div><div class="l">已索引片段</div></div>
+          <div class="kb-stat"><div class="v">${esc(MODE_ZH[state.prefs.mode] || state.prefs.mode)}</div><div class="l">当前模式</div></div>
+          <div class="kb-stat"><div class="v">${esc(SEARCH_ZH[state.prefs.searchMode] || state.prefs.searchMode)}</div><div class="l">检索策略</div></div>
         </div>
 
         <div class="kb-search">
           <span class="search-icon">${ICON.search(14)}</span>
-          <input id="kb-search-input" type="search" placeholder="Search documents by name…" value="${esc(state.kbSearch)}" />
+          <input id="kb-search-input" type="search" placeholder="按文档名称搜索…" value="${esc(state.kbSearch)}" />
         </div>
 
         ${state.kbDocs.length === 0 ? `
           <div class="kb-empty">
-            <div class="kb-empty-title">No documents indexed yet</div>
-            <div>Click <strong>Add source</strong> above to upload a PDF and start asking grounded questions.</div>
+            <div class="kb-empty-title">尚未索引任何文档</div>
+            <div>点击上方的 <strong>添加文档</strong> 上传 PDF，即可开始基于来源的提问。</div>
           </div>
         ` : `
           <div class="kb-table">
             <div class="kb-row header">
               <div></div>
-              <div>Document</div>
-              <div>Type</div>
-              <div>Chunks</div>
-              <div>Status</div>
+              <div>文档</div>
+              <div>类型</div>
+              <div>片段数</div>
+              <div>状态</div>
             </div>
             ${filtered.length === 0 ? `
               <div class="kb-row" style="grid-template-columns:1fr;padding:24px;color:var(--ink-3);">
-                No documents match "${esc(query)}".
+                没有匹配「${esc(query)}」的文档。
               </div>
             ` : filtered.map((d) => {
               const type = docTypeFromName(d.name);
@@ -739,7 +734,7 @@ function knowledgeBaseHTML() {
                   <div class="kb-num">${esc(type)}</div>
                   <div class="kb-num">${(d.chunk_count || 0).toLocaleString()}</div>
                   <div>
-                    <span class="kb-status indexed"><span class="sdot"></span>indexed</span>
+                    <span class="kb-status indexed"><span class="sdot"></span>已索引</span>
                   </div>
                 </div>
               `;
@@ -758,7 +753,7 @@ function tweaksPanelHTML() {
   const accentSwatches = Object.keys(ACCENTS).map((k) => `
     <button class="tweak-swatch ${p.accent === k ? "active" : ""}"
             style="background:${ACCENTS[k].a};"
-            data-act="set-accent" data-v="${k}" aria-label="Accent ${k}"></button>
+            data-act="set-accent" data-v="${k}" aria-label="强调色 ${k}"></button>
   `).join("");
 
   const optRow = (label, key, opts) => `
@@ -776,23 +771,23 @@ function tweaksPanelHTML() {
     <div class="tweaks-panel">
       <div class="tweaks-head">
         <span class="dot-mini"></span>
-        <span>Tweaks</span>
+        <span>外观与偏好</span>
         <span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--ink-4);font-weight:400;">atlas.v1</span>
-        <button class="icon-btn close" data-act="toggle-tweaks" title="Close">${ICON.x()}</button>
+        <button class="icon-btn close" data-act="toggle-tweaks" title="关闭">${ICON.x()}</button>
       </div>
       <div class="tweaks-body">
         <div class="tweak-row">
-          <div class="tweak-label">Accent</div>
+          <div class="tweak-label">强调色</div>
           <div class="tweak-swatches">${accentSwatches}</div>
         </div>
-        ${optRow("Theme", "theme", [{v:"light",l:"Light"},{v:"dark",l:"Dark"}])}
-        ${optRow("Answer font", "answerFont", [{v:"serif",l:"Serif"},{v:"sans",l:"Sans"}])}
-        ${optRow("Agent visibility", "agentViz", [{v:"rail",l:"Side rail"},{v:"inline",l:"Inline only"},{v:"hidden",l:"Hidden"}])}
-        ${optRow("Density", "density", [{v:"spacious",l:"Spacious"},{v:"balanced",l:"Balanced"},{v:"dense",l:"Dense"}])}
-        ${optRow("RAG mode", "mode", [{v:"two-step",l:"two-step"},{v:"agentic",l:"agentic"},{v:"corrective",l:"corrective"},{v:"hybrid",l:"hybrid"}])}
-        ${optRow("Search mode", "searchMode", [{v:"balanced",l:"balanced"},{v:"semantic",l:"semantic"},{v:"keyword",l:"keyword"},{v:"exact",l:"exact"}])}
+        ${optRow("主题", "theme", [{v:"light",l:"浅色"},{v:"dark",l:"深色"}])}
+        ${optRow("答案字体", "answerFont", [{v:"serif",l:"衬线"},{v:"sans",l:"无衬线"}])}
+        ${optRow("推理面板", "agentViz", [{v:"rail",l:"侧边栏"},{v:"inline",l:"仅内联"},{v:"hidden",l:"隐藏"}])}
+        ${optRow("信息密度", "density", [{v:"spacious",l:"宽松"},{v:"balanced",l:"平衡"},{v:"dense",l:"紧凑"}])}
+        ${optRow("RAG 模式", "mode", [{v:"two-step",l:"两步检索"},{v:"agentic",l:"智能体"},{v:"corrective",l:"纠正式"},{v:"hybrid",l:"混合"}])}
+        ${optRow("检索策略", "searchMode", [{v:"balanced",l:"平衡"},{v:"semantic",l:"语义"},{v:"keyword",l:"关键词"},{v:"exact",l:"精确"}])}
       </div>
-      <div class="tweaks-foot">All settings saved locally.</div>
+      <div class="tweaks-foot">所有设置均保存在本地浏览器。</div>
     </div>
   `;
 }
@@ -990,8 +985,8 @@ document.addEventListener("click", async (e) => {
       if (msg) {
         try {
           await navigator.clipboard.writeText(msg.content || "");
-          toast("Answer copied");
-        } catch { toast("Copy failed"); }
+          toast("已复制答案");
+        } catch { toast("复制失败"); }
       }
       break;
     }
@@ -1012,7 +1007,7 @@ document.addEventListener("click", async (e) => {
       state.prefs.ratings = state.prefs.ratings || {};
       state.prefs.ratings[mid] = state.prefs.ratings[mid] === r ? null : r;
       savePrefs();
-      toast(state.prefs.ratings[mid] === "up" ? "Thanks — marked as good" : state.prefs.ratings[mid] === "down" ? "Thanks — marked as poor" : "Rating cleared");
+      toast(state.prefs.ratings[mid] === "up" ? "感谢反馈 — 已标记为有帮助" : state.prefs.ratings[mid] === "down" ? "感谢反馈 — 已标记为回答不佳" : "已清除评分");
       render();
       break;
     }
@@ -1077,7 +1072,7 @@ async function loadKnowledgeBase() {
     state.kbLoadedAt = new Date().toISOString();
   } catch (e) {
     console.error("KB load failed", e);
-    toast("Could not load knowledge base");
+    toast("无法加载知识库");
   }
 }
 
@@ -1090,7 +1085,7 @@ async function loadSessions() {
   }
 }
 
-async function createSession(title = "New inquiry") {
+async function createSession(title = "新建对话") {
   const res = await api("/sessions", {
     method: "POST",
     body: JSON.stringify({ title }),
@@ -1128,7 +1123,7 @@ async function deleteSession(sid) {
   } else {
     render();
   }
-  toast("Session removed from sidebar");
+  toast("已从侧边栏移除对话");
 }
 
 function triggerUpload() {
@@ -1149,30 +1144,30 @@ function triggerUpload() {
 async function uploadFile(e) {
   const file = e.target.files?.[0];
   if (!file) return;
-  toast(`Uploading ${file.name}…`);
+  toast(`正在上传 ${file.name}…`);
   const fd = new FormData();
   fd.append("file", file);
   try {
     const r = await fetch("/api/knowledge/upload", { method: "POST", body: fd });
     if (!r.ok) throw new Error(await r.text());
     await loadKnowledgeBase();
-    toast("Document indexed");
+    toast("文档已索引");
     render();
   } catch (err) {
     console.error(err);
-    toast("Upload failed");
+    toast("上传失败");
   }
 }
 
 async function reindexKnowledgeBase() {
-  toast("Rebuilding index…");
+  toast("正在重建索引…");
   try {
     await api("/knowledge/reindex", { method: "POST" });
     await loadKnowledgeBase();
-    toast("Index rebuilt");
+    toast("索引已重建");
     render();
   } catch (e) {
-    toast("Rebuild failed");
+    toast("重建失败");
   }
 }
 
@@ -1232,10 +1227,10 @@ async function sendMessage(content) {
     await loadKnowledgeBase();
   } catch (err) {
     console.error(err);
-    assistantMsg.content = `_An error occurred:_ ${err.message}`;
+    assistantMsg.content = `_发生错误：_ ${err.message}`;
     assistantMsg.__streaming = false;
     state.streamingStatus = null;
-    toast("Request failed");
+    toast("请求失败");
   } finally {
     state.isSending = false;
     state.__shouldScroll = true;
@@ -1304,5 +1299,5 @@ async function boot() {
 
 boot().catch((e) => {
   console.error(e);
-  root.innerHTML = `<div style="padding:40px;font-family:sans-serif;">Failed to start: ${esc(e.message)}</div>`;
+  root.innerHTML = `<div style="padding:40px;font-family:sans-serif;">启动失败：${esc(e.message)}</div>`;
 });

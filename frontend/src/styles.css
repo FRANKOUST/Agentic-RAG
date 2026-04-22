@@ -664,6 +664,14 @@ input, textarea, select { font-family: inherit; font-size: inherit; color: inher
   padding: 4px 2px;
 }
 .composer-input::placeholder { color: var(--ink-4); }
+.composer-hint {
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--ink-4);
+  padding: 2px 2px 0;
+  letter-spacing: 0.01em;
+  user-select: none;
+}
 .composer-row {
   display: flex; align-items: center; gap: 6px;
   flex-wrap: wrap;
