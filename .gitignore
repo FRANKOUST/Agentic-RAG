@@ -5,8 +5,23 @@ __pycache__/
 .omx/
 .env
 *.pyc
+*.egg-info/
 
+# Claude Code session data
+.claude/
+
+# Design reference files (external links only, not needed in repo)
+design-md/
+
+# Temporary / scratch files
+frontend/src/app.tmp.js
+
+# Runtime data
 backend/data/kb/index.json
 backend/data/sessions.json
 backend/data/uploads/*
 !backend/data/uploads/.gitkeep
+
+# OS artifacts
+.DS_Store
+Thumbs.db

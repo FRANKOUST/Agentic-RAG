@@ -1,87 +1,217 @@
 # Agentic RAG Demo
 
-一个可直接运行的 Agentic RAG 演示项目，包含 FastAPI 后端、聊天式前端，以及 two-step / agentic / corrective / hybrid 四种问答模式。
+A fully runnable **Agentic Retrieval-Augmented Generation** workbench with a FastAPI backend and a clean chat-style frontend. Supports four retrieval modes — `two-step`, `agentic`, `corrective`, and `hybrid` — all from a single codebase with zero build step for the frontend.
 
-## 项目特性
+![Python](https://img.shields.io/badge/python-3.11%2B-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688)
+![License](https://img.shields.io/badge/license-MIT-green)
+![uv](https://img.shields.io/badge/managed%20by-uv-5c3bff)
 
-- 基于 PDF 文档的知识库构建与检索
-- 支持检索、重排、生成三层服务拆分
-- 支持 `two-step`、`agentic`、`corrective`、`hybrid` 四种运行模式
-- 提供消息会话、知识库上传、重建索引等 API
-- 前端为零构建静态页面，由 FastAPI 直接托管
-- 默认附带 `nke-10k-2023.pdf` 作为演示语料
+---
 
-## 目录结构
+## Features
 
-- `backend/app`：后端应用与 RAG 核心逻辑
-- `backend/tests`：单元测试与集成测试
-- `frontend/src`：前端静态资源
-- `scripts`：数据初始化脚本
-- `backend/data`：运行期数据目录
+- **PDF knowledge base** — upload any PDF; the system chunks, embeds, and indexes it automatically
+- **Four RAG modes** — switch between retrieval strategies without restarting the server
+- **Streaming responses** — Server-Sent Events (SSE) stream tokens to the UI in real time
+- **Source attribution** — every answer shows the source documents, page numbers, and relevance scores
+- **Tool trajectory view** — inspect every tool call the agent made before generating an answer
+- **Session management** — persistent multi-session chat history stored locally
+- **Zero build frontend** — pure HTML/CSS/JS served directly by FastAPI; no Node.js required
+- **Graceful degradation** — Tavily search and OceanBase vector store are optional; the app falls back to local implementations when they are absent
 
-## 使用 uv 管理 Python 环境
+---
 
-### 1. 安装依赖
+## Architecture
+
+```
+┌─────────────────────────────────┐
+│         Browser (SPA)           │
+│  HTML · CSS · Vanilla JS · SSE  │
+└────────────────┬────────────────┘
+                 │ HTTP / SSE
+┌────────────────▼────────────────┐
+│        FastAPI Backend          │
+│  /api/chat  /api/sessions       │
+│  /api/knowledge  /api/health    │
+└──────┬──────────────┬───────────┘
+       │              │
+┌──────▼──────┐  ┌────▼────────────────┐
+│  Chat       │  │  Knowledge Base     │
+│  Service    │  │  Service            │
+│  (4 modes)  │  │  Chunking · Embed   │
+└──────┬──────┘  │  Rerank · Retrieve  │
+       │         └─────────────────────┘
+┌──────▼──────────────────────────┐
+│  LangChain / LangGraph          │
+│  + SiliconFlow / OpenAI LLMs    │
+│  + OceanBase Vector (optional)  │
+│  + Tavily Web Search (optional) │
+└─────────────────────────────────┘
+```
+
+---
+
+## Retrieval Modes
+
+| Mode | Description |
+|---|---|
+| `two-step` | Fixed pipeline: retrieve → generate. Simple and predictable. |
+| `agentic` | An LLM agent decides whether to retrieve and which tool to call. Falls back to local implementations when external APIs are not configured. |
+| `corrective` | Retrieve → relevance-score chunks → fall back to Tavily web search when local results are insufficient. |
+| `hybrid` | Fuses dense (vector), sparse (BM25), and full-text search with configurable weighting. |
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.11+
+- [`uv`](https://github.com/astral-sh/uv) package manager
+
+### 1. Clone & install
 
 ```bash
+git clone https://github.com/FRANKOUST/Agentic-RAG.git
+cd Agentic-RAG
 uv sync
 ```
 
-默认会同步开发依赖组。
-
-### 2. 配置环境变量
+### 2. Configure environment variables
 
 ```bash
 cp .env.example .env
 ```
 
-按需填写模型、OceanBase、LangChain、Tavily 等配置。
+Edit `.env` and fill in at minimum a `SILICONFLOW_API_KEY` (or any OpenAI-compatible endpoint). All other values — OceanBase, Tavily, LangSmith — are optional.
 
-### 3. 初始化演示数据
+| Variable | Required | Description |
+|---|---|---|
+| `SILICONFLOW_API_KEY` | Yes | API key for the LLM / embedding provider |
+| `SILICONFLOW_BASE_URL` | Yes | OpenAI-compatible base URL |
+| `SILICONFLOW_CHAT_MODEL` | Yes | Chat model name (e.g. `Qwen/Qwen3-8B`) |
+| `SILICONFLOW_EMBEDDING_MODEL` | Yes | Embedding model (e.g. `BAAI/bge-m3`) |
+| `SILICONFLOW_RERANK_MODEL` | No | Reranker model for corrective / hybrid modes |
+| `OCEANBASE_HOST` | No | OceanBase vector store host |
+| `TAVILY_API_KEY` | No | Tavily search API key for web fallback |
+| `LANGCHAIN_API_KEY` | No | LangSmith tracing |
+
+### 3. Bootstrap demo data
+
+The repository ships with `nke-10k-2023.pdf` (Nike 2023 10-K filing) as a demo corpus.
 
 ```bash
 uv run python scripts/bootstrap_demo_data.py
 ```
 
-### 4. 启动应用
+### 4. Start the server
 
 ```bash
 uv run uvicorn backend.app.main:app --reload
 ```
 
-启动后访问：`http://127.0.0.1:8000`
+Open **http://127.0.0.1:8000** in your browser.
 
-## 测试
+---
+
+## Project Structure
+
+```
+.
+├── backend/
+│   ├── app/
+│   │   ├── api/routers/     # FastAPI route handlers (chat, sessions, knowledge, health)
+│   │   ├── agent/           # LangGraph agentic RAG implementation
+│   │   ├── corrective_rag/  # Corrective RAG with relevance scoring & web fallback
+│   │   ├── core/            # Logging, exception handling
+│   │   ├── kb/              # PDF ingestion, chunking, embedding, index management
+│   │   ├── retrieval/       # Dense / sparse / hybrid retrieval strategies
+│   │   ├── rerank/          # Cross-encoder reranking
+│   │   ├── services/        # ChatService, KnowledgeBaseService, SessionService
+│   │   ├── schemas/         # Pydantic request / response models
+│   │   ├── config/          # Settings loaded from .env
+│   │   └── main.py          # FastAPI app factory
+│   ├── data/                # Runtime data (gitignored — created on first run)
+│   └── tests/
+│       ├── unit/
+│       └── integration/
+├── frontend/
+│   └── src/
+│       ├── index.html       # Single-page app shell
+│       ├── styles.css       # Design tokens & component styles
+│       ├── app.js           # Vanilla JS app (no framework, no bundler)
+│       └── assets/          # Static images
+├── scripts/
+│   ├── bootstrap_demo_data.py
+│   └── ingest_nike_10k.py
+├── nke-10k-2023.pdf         # Demo corpus (Nike 2023 10-K)
+├── pyproject.toml
+├── uv.lock
+└── .env.example
+```
+
+---
+
+## API Reference
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/chat` | Send a message; returns an SSE stream |
+| `GET` | `/api/sessions` | List all sessions |
+| `POST` | `/api/sessions` | Create a new session |
+| `GET` | `/api/sessions/{id}/messages` | Fetch messages for a session |
+| `POST` | `/api/knowledge/upload` | Upload a PDF to the knowledge base |
+| `POST` | `/api/knowledge/reindex` | Rebuild the vector index |
+| `GET` | `/api/knowledge/documents` | List indexed documents |
+| `GET` | `/api/health` | Health check |
+
+The chat endpoint accepts:
+
+```json
+{
+  "session_id": "string",
+  "message": "string",
+  "mode": "two-step | agentic | corrective | hybrid",
+  "search_mode": "balanced | semantic | keyword | exact",
+  "stream": true
+}
+```
+
+---
+
+## Development
+
+### Run tests
 
 ```bash
 uv run pytest -q -c pytest.ini
 ```
 
-## API 列表
+### Lint & format
 
-- `POST /api/chat`
-- `GET /api/sessions`
-- `POST /api/sessions`
-- `GET /api/sessions/{id}/messages`
-- `POST /api/knowledge/upload`
-- `POST /api/knowledge/reindex`
-- `GET /api/knowledge/documents`
-- `GET /api/health`
+```bash
+uv run ruff check .
+uv run black .
+```
 
-## 运行模式说明
+### Add a new document at startup
 
-### `two-step`
+Drop any PDF into `backend/data/uploads/` before running `bootstrap_demo_data.py`, or use the `/api/knowledge/upload` endpoint at runtime.
 
-固定先检索，再基于检索结果生成回答。
+---
 
-### `agentic`
+## Contributing
 
-由代理判断是否需要检索，并记录工具调用轨迹。若外部能力未完整配置，则自动退回本地兼容实现。
+Contributions are welcome! Please open an issue first to discuss what you would like to change. For pull requests:
 
-### `corrective`
+1. Fork the repo and create your branch from `main`
+2. Run the test suite and ensure all tests pass
+3. Follow the existing code style (`ruff` + `black`)
+4. Update documentation if needed
 
-先检索、再做相关性判断；当结果质量不足时执行回退策略。Tavily 搜索为可选能力，未配置时会优雅降级。
+---
 
-### `hybrid`
+## License
 
-统一融合稠密检索、稀疏检索与全文检索，并支持多种搜索模式切换。
+This project is released under the [MIT License](LICENSE).
